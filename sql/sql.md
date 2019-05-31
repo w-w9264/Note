@@ -1,4 +1,4 @@
-#基本sql
+# 基本sql
 
 * select
 
