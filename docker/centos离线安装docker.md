@@ -127,4 +127,3 @@ C:\Users\w_w>docker cp centostest:/etc/yum.repos.d/docker.repo E:/docker/docker.
 原文作者：蛮大人
 
 链接：[Docker验证Centos7.2离线安装Docker环境](https://opsdev.fun/2018/05/09/O2-0-Docker验证Centos7-2离线安装Docker环境/)
-
