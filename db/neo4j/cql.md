@@ -62,23 +62,149 @@ n = (:Persion)-[:ACTED_IN]->(:Movie)
 
 Cypher既可用于查询又可用于更新图数据
 
+#### 更新语句的结构
 
+一个Cypher查询部分不能同时匹配和更新图数据，每个部分要么读取要么更新它。在更新查询语句中，所有的读取操作必须在任何的写操作发生之前完成。
+
+#### 返回数据
+
+任何查询都可以返回数据。return语句有三个子语句，分别微skip、limit和order by。如果返回的图元素是刚刚删除的数据，需要注意的是这时的数据的指针不在有效，针对它们的任何操作都是未定义的
 
 ### 事务
 
+任何更新图的查询都运行在一个事务中。一个更新查询要么全部成功，要么全部失败。Cypher或者创建一个新的事务，或者运行一个已有的事务中。
+
 ### 唯一性
 
+当进行模式匹配时，Neo4j将确保单个模式中不会包含匹配到多次的同一个图关系。例如查找一个用户的朋友的朋友时不应该返回该用户。
+
+当然有时又未必一直希望这样，如果查询应该返回该用户，可以通过多个match语句延申匹配关系来实现。
+
 ### 兼容性
+
+Cypher不是一尘不变的语言。新版本引入了很多新的功能，一些旧的功能可能会被移除。如果需要的话，旧版本依然可以访问得到。有两种方式可以在查询中选择使用哪个版本：
+
+1. 为所有的查询设置版本：可以通过neo4j.conf中cypher.default_language_version参数来配置Neo4j数据库使用哪个版本的Cypher语言
+2. 在查询中指定版本：简单的在查询开始的时候写上版本，如Cypher 2.3.
 
 ## 基本语法
 
 ### 类型
 
+Cypher处理的所有值都有一个特定的类型。支持的类型有：数值型、字符串、布尔型、节点、关系、路径、映射(Map)、列表(List)。null是任何类型的值
+
 ### 表达式
+
+#### 概述
+
+Cypher中的表达式如下：
+
+> 十进制(整型和双精度型)的字面值：13、-13333、3.14、6.022E34
+>
+> 十六进制整型字面值(以0x开头)：0x13zf、0xFC9A0、-0x66eff
+>
+> 八进制整型字面值(以0开头)：0223、06546、-023432
+>
+> 字符串字面值：'Hello'、"World"
+>
+> 布尔字面值：true、false、TRUE、FALSE
+>
+> 变量：n、x、rel、'a friend'
+>
+> 属性：n.prop、x.prop、rel.thisProperty、'a friend'.'(property name)'
+>
+> 动态属性：n["prop"]、rel[n.city + n.zip]、map[coll[0]]
+>
+> 参数：$param、$0
+>
+> 表达式列表：['a','b']、[1,2,3]、['a',3,n.property,$param]、[]
+>
+> 函数调用：length(p)、nodes(p)
+>
+> 聚合函数：avg(x.prop)、count(*)
+>
+> 路径-模式：(a)-->()<--(b)
+>
+> 计算式：1=2 and 3<4
+>
+> 返回true或者false的断言表达式：a.prop = 'Hello'、length(p)>10
+>
+> 正则表达式：a.name=~'Tob.*'
+>
+> 大小写敏感的字符串匹配表达式：a.surname starts with 'sven'、a.surname ends with 'son' or a.surname contains 'son'
+>
+> case 表达式
+
+#### 转义字符
+
+| 字符       | 含义                                                  |
+| ---------- | ----------------------------------------------------- |
+| \t         | 制表符                                                |
+| \b         | 退格                                                  |
+| \n         | 换行                                                  |
+| \r         | 回车                                                  |
+| \f         | 换页                                                  |
+| \\'        | 单引号                                                |
+| \\"        | 双引号                                                |
+| \\\        | 反斜杠                                                |
+| \uxxxx     | Unicode UTF-16编码点(4位的十六进制数字必须以"\u"开头) |
+| \uxxxxxxxx | Unicode UTF-32编码点(8位的十六进制数字必须以"\u"开头) |
+
+#### case表达式
+
+1. 简单的case表达式
+
+   计算表达式的值，然后依次与when语句中的表达式进行比较，直到匹配上为止。如果未匹配上，则else中的表达式将作为结果。如果else语句不存在，那么将返回null。
+
+   语法：
+
+   >**case** test
+   >
+   >**when** value **then** result
+   >
+   >[**when** ...]
+   >
+   >[**else** default]
+   >
+   >**end**
+
+   test:一个有效的表达式
+
+   value:一个表达式，他的结果将与test表达式的结果进行比较
+
+   result:如果value表达式能够与test表达式匹配，他将作为结果表达式
+
+   default:没有匹配的情况下的默认返回式
+
+2. 一般的case表达式
+
+   按顺序判断断言，直到找到一个为true，然后对应的结果被返回。如果没有找到就返回else的值，如果没有else语句则返回null
+
+   语法：
+
+   > **case**
+   >
+   > **when** predicate **then** result
+   >
+   > [**when** ...]
+   >
+   > [**else** default]
+   >
+   > **end**
+
+   predicate:判断的断言，已找到一个有效的可选项
+
+   result:如果predicate匹配到，result将作为结果表达式
+
+   default:没有匹配的情况下的默认返回表达式
 
 ### 变量
 
+当需要引用模式(Pattern)或者查询某一部分的时候，可以对其进行命名。支队不同部分的这些命名被称为变量
+
 ### 参数
+
+
 
 ### 运算符
 
@@ -401,7 +527,7 @@ variable:引用list中的元素的变量，他在expression中会用到
 expression:针对列表中的每一个元素所运行的表达式，并产生一个结果列表。
 
 ```cypher
-match p = (a)==>(b)-->(c) where a.name = 'Alice' and b.name = 'Daniel' return extract(n in nodes(p) | n.age) as extracted	//返回了路径中所有节点的age属性
+match p = (a)-->(b)-->(c) where a.name = 'Alice' and b.name = 'Daniel' return extract(n in nodes(p) | n.age) as extracted	//返回了路径中所有节点的age属性
 ```
 
 #### filter()
@@ -469,7 +595,7 @@ variable:引用列表中的每个元素的变量
 expression:针对列表中每个元素执行的表达式
 
 ```cypher
-match p = (a)-->(b)==>(c) where a.name = 'Alice' and b.name = 'Bob' and c.name = 'Daniel' return reduce(totalAge = 0, n in nodes(p) | totalAge + n.age) as reduction	//将路径中每一个节点的age数值加起来，然后返回一个单值
+match p = (a)-->(b)-->(c) where a.name = 'Alice' and b.name = 'Bob' and c.name = 'Daniel' return reduce(totalAge = 0, n in nodes(p) | totalAge + n.age) as reduction	//将路径中每一个节点的age数值加起来，然后返回一个单值
 ```
 
 ### 数学函数
