@@ -2,6 +2,8 @@
 
 Cypher是一种图数据库查询语言，表现力丰富，能高效地查询和更新图数据。
 
+
+
 [TOC]
 
 ## Cypher概述
@@ -204,27 +206,344 @@ Cypher中的表达式如下：
 
 ### 参数
 
+Cypher支持带参数的查询。参数能够用于where语句中的字面值和表达式，start语句中的索引值、索引查询以及节点和关系的id。参数不能用于属性名、关系类型和标签，因为这些模式将作为查询结构的一部分被编译进查询计划。合法的参数名是字母、数字以及两者的组合。参数以json格式提供，具体如何提交他们取决于所使用的驱动程序。例如：
 
+参数：
+
+```json
+{
+	"name" : "Johan"
+}
+```
+
+查询语句:
+
+```cypher
+match (n) where n.name = $name return n
+```
 
 ### 运算符
 
+| 运算符                                    | 说明                                                         |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| +、-、*、/、^                             | 数学运算符                                                   |
+| =、<>、<、>、<=、>=、is null、is not null | 比较运算符                                                   |
+| and、or、xor、not                         | 布尔运算符                                                   |
+| +，=~                                     | 字符串运算符，连接字符串的为+，正则表达式匹配为=~            |
+| +、in                                     | 列表运算符，列表的连接可通过+运算符，可用in来检查列表中是否存在某个元素 |
+| ?、!                                      | Cypher 2.0之后已被移除                                       |
+
 ### 注释
+
+Cypher语言的注释使用//来注释行
 
 ### 模式(Patterns)
 
+使用模式可以描述你期望看到的数据的形状。模式描述数据的形式很类似在白板上画出图的形状，通常用圆圈来表示节点、用箭头来表示关系。
+
+#### 节点模式
+
+节点使用一对圆括号表示。例如：
+
+```cypher
+(n)
+```
+
+#### 关联节点的模式
+
+模式可以描述多个节点及其之间的关系，Cypher使用箭头来表示两个节点之间的关系。例如：
+
+```cypher
+(a)-->(b)
+```
+
+描述节点和关系的方式可以扩展到任意数量的节点和他们之间的关系。例如：
+
+```cypher
+(a)-->(b)<--(c)
+```
+
+这一系列的相互关联的节点和关系被称为路径。节点的命名仅仅当后续的模式或者查询中需要使用的时才需要命名。如果不需要可以省略。例如：
+
+```cypher
+(a)-->()<--(c)
+```
+
+#### 标签
+
+模式除了可以描述节点以外还可以描述标签，例如：
+
+```cypher
+(a:User)-->(b)
+```
+
+也可以描述一个节点的多个标签，例如：
+
+```cypher
+(a:User:Persion)-->(b)
+```
+
+#### 指定属性
+
+节点和关系是图的基础结构。Neo4j的节点和关系都可以有属性，这样可以建立更丰富的模型。属性在模式中使用键值对的映射结构来表达，然后用大括号包起来。例如：
+
+节点属性
+
+```cypher
+(a{name : 'Tom', sport : 'Brazilian Ju-Jitsu'})
+```
+
+关系属性
+
+```cypher
+(a)-[{blocked : false}]->(b)
+```
+
+模式在create语句中支持使用单个参数来指定属性。例如：
+
+```cypher
+create (node $paramName)
+```
+
+但是在其他语句中是不行的，因为Cypher在编译查询的时候需要知道具体的属性的名称，以便于高效的匹配。
+
+#### 描述关系
+
+用箭头可以描述两个节点之间的关系：
+
+```cypher
+(a)-->(b)
+```
+
+无方向的关系：
+
+```cypher
+(a)--(b)
+```
+
+关系赋值变量：
+
+```cypher
+(a)-[r]->(b)
+```
+
+给关系指定类型：
+
+```cypher
+(a)-[r:type]->(b)
+```
+
+匹配多种关系：
+
+```cypher
+(a)-[r:type1|type2]->(b)	//只适用于match语句，因为一个关系不能创建多个类型
+```
+
+给关系指定类型省略命名：
+
+```cypher
+(a)-[:type]->(b)
+```
+
+匹配指定关系长度的模式：
+
+```cypher
+(a)-[*2]->(b)
+```
+
+匹配指定长度范围的关系(即可变长度关系)：
+
+```cypher
+(a)-[*3..5]->(b)
+```
+
+匹配省略边界长度的关系：
+
+```cypher
+(a)-[*3..]->(b)	//长度大于等于3的路径
+(a)-[*..5]->(b)	//长度小于等于5的路径  
+(a)-[*]->(b)	//长度任意的路径
+```
+
+#### 赋值给路径变量
+
+Cypher 支持使用标识符给路径命名，例如：
+
+```cypher
+p = (a)-[&3..5]->(b)
+```
+
 ### 列表
+
+#### 概述
+
+使用方括号和一组以逗号分割的元素来创建一个列表
+
+```cypher
+return [1,2,3,4]	//返回[1,2,3,4]
+range(0, 10)	//返回[0,1,2,3,4,5,6,7,8,9,10]
+```
+
+使用方括号来访问列表中的元素
+
+```cypher
+return range(0, 10)[1]	//返回1
+```
+
+索引可以为负数
+
+```cypher
+return range(0, 10)[-1] //返回10
+```
+
+也可以在方括号中指定返回指定范围的元素，左闭右开
+
+```cypher
+retrun range(0, 10)[0..3]	//返回[0,1,2]
+retrun range(0, 10)[0..-5]	//返回[0,1,2,3,4,5]
+retrun range(0, 10)[-5..]	//返回[6,7,8,9,10]
+retrun range(0, 10)[..3]	//返回[0,1,2]   
+retrun range(0, 10)[5..15]	//索引越界会直接从越界的地方返回[5,6,7,8,9,10]
+```
+
+使用size函数获取列表的长度
+
+```cypher
+return size(range(0, 10)[0..3])	//返回3
+```
+
+#### List推导式
+
+List推导式(Comprehension)是Cypher中基于已经存在的列表创建一个列表的语法结构。它遵循数学上的集合，代替使用映射和过滤函数。例如：
+
+```cypher
+return [x in range(0, 10) where x % 2 = 0 | x ^ 3] as result
+```
+
+#### 模式推导式
+
+模式推导式是Cypher基于模式匹配的结果创建列表的一种语法构造。模式推导式将像一般的match语句那样去匹配模式，断言部分与一般的where语句一样，他将产生一个指定的定制投射。例如：
+
+```cypher
+match (a:Persion{name : 'Cahrlie Sheen'}) reuturn [(a)-->(b) where b:Movie | b.year] as years
+```
+
+#### 字面值映射
+
+Cypher也可以构造映射。通过rest接口可以获取json对象。在java中对应的是java.uril.Map<String,Object>。例如：
+
+```cypher
+retrun { key : 'Valur', listKey : [{ inner : 'Map1' }, { inner : 'Map2' }]}
+```
+
+#### Map映射
+
+Cypher支持一个名为"map projections"的概念，Map投射以指向图实体的且用逗号分隔的变量簇开头，并包含以{}包括起来的映射元素
+
+语法：map_variable {map_element, [, ...n]}
+
+一个map元素投射一个或者多个键值对到map映射。这里有4种类型的map投射元素：
+
+>属性选择器：投射属性名作为键，map_variable中对应键的值作为键值
+>
+>字面值项：来自任意表达式的键值对，如key:<expression>
+>
+>变量选择器：投射一个变量，变量名作为键，变量的值作为投射的值。它的语法只有变量
+>
+>全属性选择器：投射来自map_variable中的所有键值对
+
+投射举例：
+
+找到Charlie Sheen和返回关于他和他参演过的电影。这个例子展示了字面值项类型的map映射，反过来它还在聚合函数collect()中使用了map投射。
+
+```cypher
+match (atcor:Persion{name:'Charle Sheen'})-[:ACTED_IN]->(movie:Movie) return actor { .name, .realName, movies: collect(movie {.title, .year})}
+```
 
 ### 空值
 
+空值null在Cypher中表示未找到或者未定义。从概念上讲，null意味着"一个未找到的未知值"。对待null会与其他值有些不同，例如从节点中获取一个并不存在的属性将返回null。大多数以null作为输入的表达式将返回null。这包括where语句中用于断言的布尔表达式。
+
+null不等于null，两个未知的值并不意味着他们是同一个值。因此null = null返回null而不是true。
+
+#### 空值的逻辑运算
+
+逻辑运算符包括and、or、xor、in、not，把null当作未知的三值逻辑值，and、or、xor的逻辑值表如下：
+
+| a     | b     | a and b | a or b | a xor b |
+| ----- | ----- | ------- | ------ | ------- |
+| false | false | false   | false  | false   |
+| false | null  | false   | null   | null    |
+| false | true  | false   | true   | true    |
+| true  | false | false   | true   | true    |
+| true  | null  | null    | true   | null    |
+| true  | true  | true    | true   | false   |
+| null  | false | false   | null   | null    |
+| null  | null  | null    | null   | null    |
+| null  | true  | null    | true   | null    |
+
+#### 空值与in
+
+in运算符遵循类似的逻辑。如果列表中存在某个值，结果就返回true，如果列表包含null值并且没有匹配到值，结果返回null，否则为false。例如：
+
+| 表达式             | 结果  |
+| ------------------ | ----- |
+| 2 in [1,2,3]       | true  |
+| 2 in [1,null,3]    | null  |
+| 2 in [1,2,null]    | true  |
+| 2 in [1]           | false |
+| 2 in []            | false |
+| null in [1,2,3]    | null  |
+| null in [1,null,3] | null  |
+| null in []         | false |
+
+all,any,none和single与in类似，如果可以确切的计算出结果将返回true或者false，否则将返回null
+
+#### 返回空值的表达式
+
+> 从列表中或者不存在的元素：\[][0],head([])
+>
+> 试图访问节点或者关系的不存在的属性：n.missingProperty
+>
+> 与null做比较：1<null
+>
+> 包含null的算术运算：1+null
+>
+> 包含任何null参数的函数调用：sin(null)
+
 ## 语句
+
+语句可以分为三类，读语句、写语句和通用语句。
+
+> 读语句：[MATCH](#MATCH),[OPTIONAL MATCH](#OPTIONAL MATCH),[WHERE](#WHERE),[START](#START),[AGGREGATION](#AGGREGATION),[LOAD CSV](#LOAD CSV)
+>
+> 写语句：[CREATE](#CREATE),[MERGE](#MERGE),[SET](#SET),[DELETE](#DELETE),[REMOVE](#REMOVE),[FOREACH](#FOREACH),[CREATE UNIQUE](#CREATE UNIQUE)
+>
+> 通用语句：[RETURN](#RETURN),[ORDER BY](#ORDER BY),[LIMIT](#LIMIT),[SKIP](#SKIP),[WITH](#WITH),[UNWIND](#UNWIND),[UNION](#UNION),[CALL](#CALL)
 
 ### MATCH
 
-### OPTINAL MATCH
+MATCH语句用于指定的模式检索数据库。
+
+MATCH语句通过模式(Pattem)来检索数据库。它常与带有约束或者断言的WHERE语句一起使用，这使得匹配的模式更具体。断言是模式描述的一部分，不能看作是匹配结果的过滤器。这意味着WHERE应当总是与MATCH语句放在-起使用。
+
+MATCH可以出现在查询的开始或者末尾，也可能位于WITH之后。如果它在语句开头，此时不会绑定任何数据。Neo4j 将设计一个搜索去找到匹配这个语句以及WHERE中指定断言的结果。这将牵涉数据库的扫描，搜索特定标签的节点或者搜索一个索引以找到匹配模式的开始点。这个搜索找到的节点和关系可作为一个“绑定模式元素( Bound PattermnElements)”。它可以用于匹配一些子图的模式，也可以用于任何进一步的MATCH语句，Neo4j将使用这些已知的元素来找到更进一步的未知元素。
+
+### OPTIONAL MATCH
+
+OPTINAL MATCH语句用于搜索模式中描述的匹配项，对于找不到的项用null 代替。 OPTINAL MATCH匹配模式与MATCH类似。不同之处在于，如果没有匹配到，OPTINAL MATCH将用null作为未匹配到部分的值。OPTINAL MATCH在Cypher中类似SOL语句中的outer join。
+
+要么匹配整个模式，要么都未匹配。记住，WHERE是模式描述的一部分，匹配的时候就会考虑到WHERE语句中的断言，而不是匹配之后。这对于有多个(OPTINAL)MATCH语句的查询尤其重要，一定要将属于MATCH的WHERE语句与MATCH放在起。
 
 ### WHERE
 
+WHERE在MATCH或者OPTIONAL MATCH语句中添加约束，或者与WITH一起使用来过滤结果。
+
+WHERE不能单独使用，它只能作为MATCH、OPTIONAL MATCH、START和WITH的一部分。如果是在WITH和START中，它用于过滤结果。对于MATCH和OPTIONAL MATCH，WHERE为模式增加约束，它不能看作是匹配完成后的结果过滤。
+
 ### START
+
+
 
 ### AGGREGATION
 
