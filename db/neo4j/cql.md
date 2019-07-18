@@ -22,27 +22,27 @@ Neo4j图由节点和关系构成。节点可能还有标签和属性，关系可
 
 Cypher采用一对圆括号来表示节点
 
-| 表达式                                                | 描述                                                         |
-| ----------------------------------------------------- | ------------------------------------------------------------ |
-| ()                                                    | 匿名节点                                                     |
-| (matrix)                                              | 赋有变量的节点，将匹配到的节点赋值给matrix，这个变量可以在其他地方进行引用，变量的可见范围局限于单个语句 |
-| (:Movie)                                              | 匹配标签为Movie的匿名节点                                    |
-| (matrix:Movie)                                        | 匹配标签为Movie的节点并赋值给matrix                          |
-| (matrix:Movie{title : "The Matrix"})                  | 匹配标签为Movie并且属性title为The Matrix的节点并赋值给matrix |
-| (matrix:Movie{title : "The Matrix", released : 1997}) | 匹配标签为Movie并且属性title为The Matrix以及属性released为1997的节点并赋值给matrix |
+| 表达式                                                  | 描述                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| `()`                                                    | 匿名节点                                                     |
+| `(matrix)`                                              | 赋有变量的节点，将匹配到的节点赋值给matrix，这个变量可以在其他地方进行引用，变量的可见范围局限于单个语句 |
+| `(:Movie)`                                              | 匹配标签为Movie的匿名节点                                    |
+| `(matrix:Movie)`                                        | 匹配标签为Movie的节点并赋值给matrix                          |
+| `(matrix:Movie{title : "The Matrix"})`                  | 匹配标签为Movie并且属性title为The Matrix的节点并赋值给matrix |
+| `(matrix:Movie{title : "The Matrix", released : 1997})` | 匹配标签为Movie并且属性title为The Matrix以及属性released为1997的节点并赋值给matrix |
 
 #### 关系语法
 
 Cypher使用一对短横线(--)表示一个无方向的关系，有方向的关系在其中一段加上一个箭头(-->或者<--),方括号表达式[...]可用于添加详情，里面可以包含变量、属性和类型信息
 
-| 表达式                              | 描述                                                         |
-| ----------------------------------- | ------------------------------------------------------------ |
-| --                                  | 表示无方向关系                                               |
-| -->                                 | 表示一个有方向的关系                                         |
-| -[role]->                           | 赋有变量的关系，将匹配到的关系赋值给role，这个变量可以在其他地方进行引用，变量的可见范围局限于单个语句 |
-| -[:ACTED_IN]->                      | 匹配类型为ACTED_IN的关系                                     |
-| -[role:ACTED_IN]->                  | 匹配类型为ACTED_IN的关系并赋值给role                         |
-| -[role:ACTED_IN{roles : ["Neo"]}]-> | 匹配类型为ACTED_IN并且属性roles为["Neo"]的关系并赋值给role   |
+| 表达式                                | 描述                                                         |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `--`                                  | 表示无方向关系                                               |
+| `-->`                                 | 表示一个有方向的关系                                         |
+| `-[role]->`                           | 赋有变量的关系，将匹配到的关系赋值给role，这个变量可以在其他地方进行引用，变量的可见范围局限于单个语句 |
+| `-[:ACTED_IN]->`                      | 匹配类型为ACTED_IN的关系                                     |
+| `-[role:ACTED_IN]->`                  | 匹配类型为ACTED_IN的关系并赋值给role                         |
+| `-[role:ACTED_IN{roles : ["Neo"]}]->` | 匹配类型为ACTED_IN并且属性roles为["Neo"]的关系并赋值给role   |
 
 #### 模式语法
 
@@ -139,18 +139,18 @@ Cypher中的表达式如下：
 
 #### 转义字符
 
-| 字符       | 含义                                                  |
-| ---------- | ----------------------------------------------------- |
-| \t         | 制表符                                                |
-| \b         | 退格                                                  |
-| \n         | 换行                                                  |
-| \r         | 回车                                                  |
-| \f         | 换页                                                  |
-| \\'        | 单引号                                                |
-| \\"        | 双引号                                                |
-| \\\        | 反斜杠                                                |
-| \uxxxx     | Unicode UTF-16编码点(4位的十六进制数字必须以"\u"开头) |
-| \uxxxxxxxx | Unicode UTF-32编码点(8位的十六进制数字必须以"\u"开头) |
+| 字符         | 含义                                                  |
+| ------------ | ----------------------------------------------------- |
+| `\t`         | 制表符                                                |
+| `\b`         | 退格                                                  |
+| `\n`         | 换行                                                  |
+| `\r`         | 回车                                                  |
+| `\f`         | 换页                                                  |
+| `\'`         | 单引号                                                |
+| `\"`         | 双引号                                                |
+| `\\`         | 反斜杠                                                |
+| `\uxxxx`     | Unicode UTF-16编码点(4位的十六进制数字必须以"\u"开头) |
+| `\uxxxxxxxx` | Unicode UTF-32编码点(8位的十六进制数字必须以"\u"开头) |
 
 #### case表达式
 
@@ -446,7 +446,7 @@ Cypher支持一个名为"map projections"的概念，Map投射以指向图实体
 
 >属性选择器：投射属性名作为键，map_variable中对应键的值作为键值
 >
->字面值项：来自任意表达式的键值对，如key:<expression>
+>字面值项：来自任意表达式的键值对，如`key:<expression>`
 >
 >变量选择器：投射一个变量，变量名作为键，变量的值作为投射的值。它的语法只有变量
 >
@@ -543,39 +543,83 @@ WHERE不能单独使用，它只能作为MATCH、OPTIONAL MATCH、START和WITH�
 
 ### START
 
+通过遗留索引(Legacy Index)查找开始点。
 
+Cypher中的每一个查询描述了一个模式，一个模式可以有多个开始点。一个开始点是模式中的一个关系或者节点。使用start时，只能通过遗留索引寻找来引出开始点。使用一个不存在的遗留索引将报错。
 
 ### AGGREGATION
 
+Cypher支持使用聚合(Aggregation)来计算聚在一起的数据，类似SQL中的group by，聚合函数有多个输入值，然后基于他们计算出一个聚合值。例如avg函数计算多个数值的平均值。
+
 ### LOAD CSV
+
+LOAD CSV用于从CSV文件中导入数据。
 
 ### CREATE
 
+create语句用于创建图元素：节点和关系。
+
 ### MERGE
+
+merge可以确保图数据库中存在某个特定的模式。如果该模式不存在，那就创建他。
 
 ### SET
 
+set语句用于更新节点的标签以及节点和关系的属性。set可以使用map中的参数来设置属性。
+
 ### DELETE
+
+delete语句用于删除图元素(节点、关系或者路径)。强调不能只删除节点而不删除与之相连的关系。要么显式的删除对应的关系，要么使用detach delete。
 
 ### REMOVE
 
+remove语句用于删除图元素的属性和标签。
+
 ### FOREACH
+
+foreach语句用于更新列表中的数据，或者来自路径的组件，或者来自聚合的结果。
+
+列表(List)和路径(Paths)式Cypher中的关键概念，可以使用froeach来更新其中的数据。它可以在路径或者聚合的列表的每一个元素上执行更新命令。foreach括号内的变量是与外部分开的，不能用于该语句之外。
+
+在foreach括号内，可以执行任何的更新命令，包括create、create unique、delete和foreach。如果希望对列表中的每个元素执行额外的match命令，使用unwind更合适。
 
 ### CREATE UNIQUE
 
+create unique语句相当于match和create的混合体，即尽可能的匹配，然后创建未匹配的。
+
 ### RETURN
+
+return语句定义了查询结果集中返回的内容。可以是节点、关系或者是它们的属性。
 
 ### ORDER BY
 
+order by是紧跟return或者是with的字句，它指定了输出的结果应该如何排序。
+
+在变量的范围方面，order by遵循特定的规则，这取决于return的投射或者with语句是否聚合或者distinct。如果他是一个聚合或者distinct投射，那么只有投射中的变量可以使用。如果投射不修改输出基数(聚合和distinct做的)，在投射之前可用的变量也可以使用。当投射语句覆盖了已存在的变量时，只有新的变量可用。
+
 ### LIMIT
+
+limit限制输出的行数。limit可接受结果为正整数的任意表达式，但表达式不能引用节点或者关系。
 
 ### SKIP
 
+skip定义了从那行开始返回结果。使用skip可以跳过开始的一部分结果。
+
 ### WITH
+
+with语句将分段的查询部分连接在一起，查询结果从一部分以管道形式传递给另一部分作为开始点。
+
+使用with可以在将结果传递到后续查询之前对结果进行操作。操作可以是改变结果的形式或者数量。with的一个常见用法就是限制传递给其他match语句的结果数。通过结合order by和limit，可获取排在前面的x个结果。
+
+另一个用法是在聚合值上过滤。with用于在where断言中引入聚合。这些聚合表达式创建了新的结果绑定字段。with也能像return一样对结果使用别名作为绑定名。with还可以用于将图的读数据和更新语句分开，查询中的每一部分要么只是读取，要么都是写入。当部分的语句是基于读语句的结果时，这两者之间的转换必须使用with。
 
 ### UNWIND
 
+unwind将一个列表展开为一个行的序列。用unwind可以将任何列表转换为单独的行。这些列表可以参数的形式传入，如前面collect函数的结果或者其他表达式。unwind一个较为常见的用法时创建唯一的列表。另外一个时从提供给查询的参数列表中创建数据。unwind需要给内部值指定新的名字。
+
 ### UNION
+
+union语句用于将多个查询结果组合起来。使用union组合查询的结果时，所有查询到的列的名称和数量必须完全一致。使用union all会包含所有结果行，而使用union组合时，会移除结果集中的重复行。
 
 ### CALL
 
@@ -805,7 +849,7 @@ expression:返回任意值的表达式
 
 返回一条路径中的所有节点
 
-语法：nodes(path)
+语法：**nodes(path)**
 
 path:一条路径
 
@@ -813,7 +857,7 @@ path:一条路径
 
 返回一条路径中的所有关系
 
-语法：relationships(path)
+语法：**relationships(path)**
 
 path:一条路径
 
@@ -821,7 +865,7 @@ path:一条路径
 
 以字符串列表的形式返回一个节点的所有标签
 
-语法：labels(node)
+语法：**labels(node)**
 
 node:返回单个节点的任意表达式
 
@@ -829,7 +873,7 @@ node:返回单个节点的任意表达式
 
 以字符串列表的形式返回一个节点、关系或者map的所有属性的名称
 
-语法：keys(property-container)
+语法：**keys(property-container)**
 
 property-container:一个节点、关系或者字面值的map
 
@@ -837,7 +881,7 @@ property-container:一个节点、关系或者字面值的map
 
 从节点或者关系列表中返回单个属性或者某个函数的值，他将遍历整个列表，针对列表中的每一个元素运行一个表达式，然后以列表的形式返回这些结果。他的工作方式类似于Lisp和Scala等函数式语言中的map方法
 
-语法：extract(variable in list | expression)
+语法：**extract(variable in list | expression)**
 
 list:返回列表的表达式
 
@@ -853,7 +897,7 @@ match p = (a)-->(b)-->(c) where a.name = 'Alice' and b.name = 'Daniel' return ex
 
 返回列表中的满足断言要求的所有元素
 
-语法：filter(variable in list where predicate)
+语法：**filter(variable in list where predicate)**
 
 list:返回列表的表达式
 
@@ -869,7 +913,7 @@ match (a) where a.name = 'Eskill' return a.array, filter(x in a.array where size
 
 返回列表中除首元素之外的所有元素
 
-语法：tail(expression)
+语法：**tail(expression)**
 
 expression:返回某个类型列表的表达式
 
@@ -877,7 +921,7 @@ expression:返回某个类型列表的表达式
 
 返回某个范围之内的数值，值之间的步长默认为1，范围包含起始边界值，即集合为全毕
 
-语法：range(start,end [,step])
+语法：**range(start,end [,step])**
 
 start:起始数值的表达式
 
@@ -901,7 +945,7 @@ range(2, 18, 3)
 
 对列表中的每一个元素执行一个表达式，将表达式的结果存入一个累加器。他的工作机制类似Lisp和Scala等函数式语言中的fold或者reduce方法
 
-语法：reduce(accumulator = initial, variable in list | expression)
+语法：**reduce(accumulator = initial, variable in list | expression)**
 
 accumulator:用于累加每次迭代的部分结果
 
@@ -919,19 +963,473 @@ match p = (a)-->(b)-->(c) where a.name = 'Alice' and b.name = 'Bob' and c.name =
 
 ### 数学函数
 
+#### 数值函数
+
+##### abs()
+
+返回数值的绝对值。
+
+语法：**abs(expression)**
+
+expression:数值表达式
+
+##### ceil()
+
+返回大于或者等于实参的最小整数。
+
+语法：**ceil(expression)**
+
+expression:数值表达式
+
+##### floor()
+
+返回小于或者等于表达式的最大整数。
+
+语法：**floor(expression)**
+
+expression:数值表达式
+
+##### round()
+
+返回距离表达式最近的整数。
+
+语法：**round(expression)**
+
+expression:数值表达式
+
+##### sign()
+
+返回一个数值的正负。如果值为0，则返回0；如果值为负数，则返回-1；覆盖值为正数，则返回1
+
+语法：**sign(expression)**
+
+expression:数值表达式
+
+##### rand()
+
+返回[0, 1)之间的一个随机数，返回的数值在整个区间遵循均匀分布。
+
+语法：**rand()**
+
+#### 对数函数
+
+##### log()
+
+返回表达式的自然对数
+
+语法：**log(expression)**
+
+expression:数值表达式
+
+##### log10()
+
+返回表达式的自然对数(以10为底)
+
+语法：**log10(expression)**
+
+expression:数值表达式
+
+##### exp()
+
+返回e^n，e是自然对数的底，n是表达式的实参值。
+
+语法：**exp(expression)**
+
+expression:数值表达式
+
+##### e()
+
+返回自然对数的底，即e
+
+语法：**e()**
+
+##### sqrt()
+
+返回数值的平方根
+
+语法：**sqrt(expression)**
+
+expression:数值表达式
+
+#### 三角函数
+
+除非特别指明，所有的三角函数都是针对弧度值进行计算的。
+
+##### sin()
+
+返回表达式的正弦函数值
+
+语法：**sin(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### cos()
+
+返回表达式的余弦函数值
+
+语法：**cos(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### tan()
+
+返回表达式的正切函数值
+
+语法：**tan(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### cot()
+
+返回表达式的余切函数值
+
+语法：**cot(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### asin()
+
+返回表达式的反正弦函数值
+
+语法：**asin(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### acos()
+
+返回表达式的反余弦函数值
+
+语法：**acos(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### atan()
+
+返回表达式的反正切函数值
+
+语法：**atan(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### atan2()
+
+返回方位角，亦可以理解为计算复数x+yi的幅角。
+
+语法：**atan2(expression1, expression2)**
+
+expression1:表示复数x部分的数值表达式
+
+expression2:表示复数y部分的数值表达式
+
+##### pi()
+
+返回常数pi(圆周率Π)的值
+
+语法：**pi()**
+
+##### degrees()
+
+将弧度转为度
+
+语法：**degrees(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### radians()
+
+将度转换为弧度
+
+语法：**radians(expression)**
+
+expression:一个表示角的度数的数值表达式
+
+##### haversin()
+
+返回表达式的半正矢
+
+语法：**haversin(expression)**
+
+expression:一个表示角的弧度的数值表达式
+
+##### 使用haversin函数计算球面距离
+
+haversin函数可用于计算球面上两点(以经纬度方式给出)之间的距离。例如：计算德国柏林(lat 52.5, lon 13.4)和美国加州圣马特奥市(lat 375, lon -122.3)两点之间的球面距离(以km计)。
+
+```cypher
+cerate (ber:City{lat:52.5, lon:13.4}),(sm:City{lat:37.5, lon:-122.3}) return 2 * 6371 * asin(sqrt(haversin(radians(sm.lat - ber.lat)) + cos(radians(sm.lat)) * cos(radians(ber.lat)) * haversin(radians(sm.lon - ber.lon)))) as dist	//采用的地球平均半径为6371km,结果为9129.969740051658
+```
+
 ### 字符串函数
+
+#### replace()
+
+返回被替换字符串替换后的字符串，他会替换所有出现过的字符串。
+
+语法：**replace(original, search, replace)**
+
+original:原字符串
+
+search:期望被替换的字符串
+
+replace:用于替换的字符串
+
+#### substring()
+
+返回原字符串的子串，它带有一个0为开始的索引值和长度作为参数。如果长度省略了，那么他将返回从索引开始到结束的子字符串。
+
+语法：**substring(original, start [,length])**
+
+original:原字符串
+
+start:子串的开始位置
+
+length:子串的长度
+
+#### left()
+
+返回原字符串左边指定长度的子串。
+
+语法：**left(original, length)**
+
+original:原字符串
+
+length:左边子字符串的长度
+
+#### right()
+
+返回原字符串右边指定长度的子串。
+
+语法：**right(original, length)**
+
+original:原字符串
+
+length:右边子字符串的长度
+
+#### ltrim()
+
+返回原字符串移除左边的空白字符后的字符串。
+
+语法：**ltrim(original)**
+
+original:原字符串
+
+#### rtrim()
+
+返回原字符串移除右边的空白字符后的字符串。
+
+语法：**rtrim(original)**
+
+original:原字符串
+
+#### trim()
+
+返回原字符串移除两边的空白字符后的字符串。
+
+语法：**trim(original)**
+
+original:原字符串
+
+#### lower()
+
+以小写的形式返回原字符串。
+
+语法：**lower(original)**
+
+original:原字符串
+
+#### upper()
+
+以大写的形式返回原字符串。
+
+语法：**upper(original)**
+
+original:原字符串
+
+#### split()
+
+返回以指定模式分割后的字符串序列
+
+语法：**split(original, splitPattern)**
+
+original:原字符串
+
+splitPattern:分割字符串
+
+#### reverse()
+
+返回原字符串的倒序字符串
+
+语法：**reverse(original)**
+
+original:原字符串
+
+#### toString()
+
+将实参转换为字符串。他将整形浮点型转换为字符串。如果实参为字符串，则原样返回。
+
+语法：**toString(expression)**
+
+expression:返回数值、布尔或者字符串的表达式
 
 ### 自定义函数
 
+自定义函数用Java语言编写，可部署到数据库中，调用方式与其它Cypher函数一样。
+
+#### 调用自定义函数
+
+调用自定义函数`org.neo4j.procedure.example.join()`
+
+```cypher
+match(n:Member) return org.neo4j.function.example.join(collect(n.name))
+```
+
+#### 编写自定义函数
+
+自定义函数的编写类似于过程(Procedure)的创建，但它采用@UserFunction注解，并且只返回一个单值。有效的输出类型包括long、Long、double、Double、booble、Booble、String、Node、Relationship、Path、Map<String, Object>或者List\<T>，这里的T可以是任何支持的类型。
+
+下面是一个简单的自定义函数的例子，该函数将list中的字符串用指定的分割符连接起来。
+
+```java
+package example;
+import org.neo4j.procedure.Name;
+import org.neo4j.procedure.Procedure;
+import org.neo4j.procedure.UserFunction;
+public class Join {
+    @UserFunction
+    @Description("example.join(['s1','s2',...], delimiter) - join the given strings whith the given delimiter.")
+    public String join(@Name("strings") List<String> strings, @Name(value = "delimiter", defaultValue = ",") String delimiter) {
+        if (strings == null || delimiter == null) {
+            return null;
+        }
+        return String.join(delimiter, strings);
+    }
+}
+```
+
 ## 模式(Schema)
+
+基于标签的概念，Neo4j 2.0为图引入了可选模式。在索引的规范中的标签为图定义约束。索引和约束是图的模式。Cypher引入了数据定义语言(Data Definition Language, DDL)来操作模式。
 
 ### 索引
 
+数据库的索引是为了使得检索数据效率跟高而引入的允余信息。他的代价是需要额外的存储空间和使得写入时变得更慢。因此，决定哪些数据需要建立索引，那些不需要是非常重要的工作。
+
+Cypher允许所有节点上的某个属性上有特定的标签。索引一旦创建，他将自己管理并当图发生变化时自动更新。一旦索引创建并生效之后，neo4j将自动开始使用索引。
+
+#### 创建索引
+
+使用`create index on`可以在拥有某个标签的所有节点的某个属性上创建索引。索引是在后台创建，并不能立刻生效。
+
+```cypher
+create index on :Person(name)	//在拥有Person标签的所有节点的name属性上创建了索引
+```
+
+#### 删除索引
+
+使用`drop index on`可以删除拥有某个标签的所有标签的所有节点的某个属性上的索引。
+
+```cypher
+drop index on :Person(name)	//删除拥有Person标签的所有节点的name属性上的索引
+```
+
+#### 使用索引
+
+通常不需要在查询中指出使用哪个索引，Cypher自己会决定。如果希望使用指定的索引，可以使用using来提示。
+
 ### 约束
+
+Neo4j通过使用约束来保证数据完整性。约束可用于节点或者关系，可以创建节点属性的唯一性约束，也可以创建节点和关系的属性存在性约束。
+
+#### 节点属性的唯一性约束
+
+1. 创建唯一性约束
+
+   使用`is unique`语法创建约束，它能确保数据库中拥有特定标签和属性值的节点是唯一的。
+
+   ```cypher
+   create constraint on (book:Book) assert book.isbn is unique
+   ```
+
+2. 删除唯一性约束
+
+   使用`drop constraint`可以删除数据库中的一个约束。
+
+   ```cypher
+   drop constraint on (book:Book) assert book.isbn is unique
+   ```
+
+#### 节点属性的存在性约束
+
+**只有企业版有此功能。**
+
+1. 创建存在性约束
+
+   使用`assert exists(variable.propertyName)`创建约束，可确保有指定标签的所有节点都有一个特定的属性
+
+   ```cypher
+   create constraint on (book:Book) assert exists(book.isbn)
+   ```
+
+2. 删除存在性约束
+
+   使用`drop constraint`可以删除数据库中的一个约束。
+
+   ```cypher
+   drop constraint on (book:Book) assert exists(book.isbn)
+   ```
+
+#### 关系属性的存在性约束
+
+**只有企业版有此功能。**
+
+1. 创建存在性约束
+
+   使用`assert exists(variable.propertyName)`创建约束，可确保特定类型的所有关系都有一个特定的属性
+
+   ```cypher
+   create constraint on ()-[like:LIKED]-() assert exists(like.day)
+   ```
+
+2. 删除存在性约束
+
+   使用`drop constraint`可以删除数据库中的一个约束。
+
+   ```cypher
+   drop constraint on ()-[like:LIKED]-() assert exists(like.day)
+   ```
 
 ### 统计
 
+当执行一个Cypher查询时，它将先编译为一个执行计划，该计划可以运行并响应查询。为了查询的高效性，Neo4j需要统计数据库的信息。
+
+需要统计的信息如下：
+
++ 拥有特定标签的节点的数量
++ 每个索引的可选择性
++ 按类型分的关系的数量
++ 以拥有指定标签的节点开始或者结束的关系，按类型分各自的数量。
+
+当产生执行计划的统计信息发生变化时，缓存的执行计划将被重新生成。下面的配置项可控制执行计划的更新。
+
++ `dbms.index_sampling.background_enabled`
+
+  控制当需要更新时索引是否会自动重新采样，Cypher查询计划器依赖于准确的统计信息来创建执行计划，因此当数据库更新时应当保持同步。
+  
++ `dbms.index_sampling.update_percentage`
+  
+  控制多大比例的索引被更新后才触发新的采样
+  
++ `cypher.statistics_divergence_threshold`
+  
+  控制一个执行计划被认为过时并必须重新生成前，允许多少统计信息发生变化。任何统计信息的相对变化超过临界值，原有执行计划将被丢弃并创建一个新的计划。临界值0.0意味着有变化就更新，1.0意味着永远都不更新。
+  
+  索引重采样可使用内嵌的`db.resampleIndex()`和`db.resampleOutdatedIndexes()`两个内嵌过程来触发
+
 ## 查询调优
+
+手动查询性能优化的总目标是确保只从图中检索必要的数据。不必要的
+
+Cypher 执行引擎会将每个Cypher查询转为一个执行计划。为减少使用的资源，如果可能应尽可能地使用参数代替字面值。这会使得Cypher可以重用查询，而不必解析构建一个新的执行计划。
 
 ### 查询如何执行
 
