@@ -1433,15 +1433,136 @@ Cypher 执行引擎会将每个Cypher查询转为一个执行计划。为减少�
 
 ### 查询如何执行
 
+每个查询都被查询计划器转化为一个执行计划。在执行查询时，执行计划将告知Neo4j执行什么样的操作。
+
+> 规则：查询计划器有用于产生查询计划的规则。他会考虑所有可用的索引，但不使用统计信息去指导查询编译
+>
+> 成本：计划器使用统计服务为所有可选的查询赋予一个成本，然后选耗费最少的那个，这在大多数的情况下会得到更优的查询计划，但这个功能还在开发中。
+
 ### 查询性能分析
 
-### 查询调优举例
+查看执行计划对查询进行分析时有两个选项
+
+1. EXPLAN
+
+   只查看查询计划不执行该语句，需在查询语句中加入EXPLAN	
+
+2. PROFILE
+
+   运行查询语句并查看那个运算符占了大部分的工作，可在查询语句中加入PROFILE，语句被执行并跟踪传递了多少行数据给每个运算符，一个每个运算符与存储层交互了多少以获取必要的数据。加入PROFILE将占用更多的资源。
 
 ### USING
 
+USING语句用于为一个查询构建执行计划时影响计划器的决定。通过USING来强制neo4j使用一个特定的开始点叫做计划器提示。
+
+#### 索引提示
+
+索引提示用于告知计划器无论在什么情况下都应使用指定的索引作为开始点。使用在MATCH语句之后添加`USING INDEX variable:Label(property)`来补充索引提示。例如
+
+```cypher
+MATCH (liskov:Scientist { name:'Liskov' })-[:KNOWS]->(wing:Scientist)-[:RESEARCHED]->(cs:Science {name:'Computer Science'})<-[:RESEARCHED]-(conway:Scientist {name:'conway'}) USING INDEX liskov:Scientist(name) RETURN liskov.born AS column
+```
+
+提供一个索引提示会改变查询的开始点，但查询计划依然是线性的，因为只有一个开始点。如果为计划器提供另外一个索引提示，强制使用两个开始点，匹配的两端各一个。这时将使用join运算符来连接两个分支。例如
+
+```cypher
+MATCH (liskov:Scientist { name:'Liskov' })-[:KNOWS]->(wing:Scientist)-[:RESEARCHED]->(cs:Science {name:'Computer Science'})<-[:RESEARCHED]-(conway:Scientist {name:'conway'}) USING INDEX liskov:Scientist(name) USING INDEX conway:Scientist(name) RETURN liskov.born AS column
+```
+
+#### 扫描提示
+
+如果查询匹配到一个索引的大部分，它可以更快地扫描标签并过滤掉不匹配地节点。通过在MATCH语句后面使用`USING SCAN variable:Label`可以做到这一点。他将强制Cypher不使用本应该使用地索引，而采用标签扫描。例如
+
+```cypher
+MATCH (s:Scientist) USING SCAN s:Scientist WHERE s.born < 1939 REURUN s.born as colum
+```
+
+#### 连接(Join)提示
+
+连接提示是强制在特定地点进行连接。
+
+1. 提示在单个节点上地连接
+
+   ```cypher
+   MATCH (liskov:Scientist { name:'Liskov' })-[:KNOWS]->(wing:Scientist)-[:RESEARCHED]->(cs:Science {name:'Computer Science'})<-[:RESEARCHED]-(conway:Scientist {name:'conway'}) 
+   USING INDEX liskov:Scientist(name) 
+   USING INDEX conway:Scientist(name) 
+   USING JOIN ON wing
+   RETURN liskov.born AS column	//强制在wing上连接而不是使用连接提示
+   ```
+
+2. 提示在多个节点上地连接
+
+   ```cypher
+   MATCH (liskov:Scientist { name:'Liskov' })-[:KNOWS]->(wing:Scientist)-[:RESEARCHED]->(cs:Science {name:'Computer Science'})<-[:RESEARCHED]-(conway:Scientist {name:'conway'}) 
+   USING INDEX liskov:Scientist(name) 
+   USING JOIN ON liskov,cs
+   RETURN liskov.born AS column	//在多个指定的节点上产生一个连接，要求查询从同一个节点的多个方向展开
+   ```
+
 ## 执行计划
 
+Neo4j将执行一个查询的任务分解为一些被称为运算符的小块，每个运算符负责整个查询中的一小部分。这些以模式形式连接在一起的运算符被称为一个执行计划。
+
+Rows:Row运算符产生的行数，只有带有profile的查询才有。
+
+EstimatedRows:如果neo4j使用基于成本的编译器，可以看到由运算符所产生的预估的行数，编译器使用这个估值来选择合适的执行计划。
+
+DbHits:每个运算符都会向Neo4j存储引擎请求检索或者更新数据这样的操作。一个数据库命中是存储引擎工作的一个抽象单位。
+
 ### 开始点运算符
+
+用于找到图的开始点
+
+#### 全节点扫描
+
+从节点库中扫描所有节点。实参中的变量将包含所有的节点，如果查询中使用这个运算符，在任何大点的数据库中就会遭遇性能问题。
+
+```cypher
+MATCH (n) RETURN n
+```
+
+#### 通过id搜索有向关系
+
+从关系库中通过id来读取一个或者多个关系将返回关系和两端的节点
+
+```cypher
+MATCH (n1)-[r]->() WHERE id(r) = 0 RETURN r, n1
+```
+
+#### 通过id寻找节点
+
+从节点库中通过id读取一个或者多个节点
+
+```cypher
+MATCH (n) WHERE id(n) = 0 RETURN n
+```
+
+#### 通过标签扫描检索节点
+
+使用标签索引，从节点的标签索引中获取拥有指定标签的所有节点。
+
+```cypher
+MATCH (person:Person) RETURN person
+```
+
+#### 通过索引检索节点
+
+使用索引搜索节点，节点变量和使用的索引在运算符的实参中，如果索引是一个唯一性索引，运算符将由一个被称为`NodeUniqueIndexSeek`的代替。
+
+```cypher
+MATCH (person:Person{name:'Tom'}) RETURN person
+```
+
+#### 通过索引范围寻找节点
+
+使用索引检索节点，节点的属性值满足给定的字符串前缀。这个运算符可用于STARTS WITH 和比较符号，如<、>和>=。
+
+```
+
+```
+
+
 
 ### Expand运算符
 
