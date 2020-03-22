@@ -138,3 +138,18 @@ ubuntu中可设置环境变量的文件有
    ```
    cat -n test.log |grep "debug" | less  - 参看第5条operation
    ```
+
+## 防火墙
+
+### centos7
+
+查看防火墙状态： `systemctl status firewalld.service`
+
+关闭：` systemctl stop firewalld.service`
+
+启动：`systemctl start firewalld.service`
+
+防火墙随系统开启启动  ：` systemctl enable firewalld.service`
+
+开机禁用防火墙自启命令  ： `systemctl disable firewalld.service`
+
